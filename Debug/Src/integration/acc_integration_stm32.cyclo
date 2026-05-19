@@ -1,0 +1,14 @@
+../Src/integration/acc_integration_stm32.c:233:13:enable_gpio_port_clock	7
+../Src/integration/acc_integration_stm32.c:320:13:restore_gpio_bank	1
+../Src/integration/acc_integration_stm32.c:148:17:get_rtc_tick	7
+../Src/integration/acc_integration_stm32.c:194:13:rtc_set_next_wakeup_time	5
+../Src/integration/acc_integration_stm32.c:407:6:HAL_RTC_AlarmAEventCallback	1
+../Src/integration/acc_integration_stm32.c:418:6:HAL_RTCEx_WakeUpTimerEventCallback	1
+../Src/integration/acc_integration_stm32.c:473:6:acc_integration_sleep_us	7
+../Src/integration/acc_integration_stm32.c:468:6:acc_integration_sleep_ms	1
+../Src/integration/acc_integration_stm32.c:496:6:acc_integration_set_periodic_wakeup	1
+../Src/integration/acc_integration_stm32.c:552:6:acc_integration_sleep_until_periodic_wakeup	8
+../Src/integration/acc_integration_stm32.c:587:10:acc_integration_get_time	1
+../Src/integration/acc_integration_stm32.c:592:7:acc_integration_mem_alloc	1
+../Src/integration/acc_integration_stm32.c:597:7:acc_integration_mem_calloc	1
+../Src/integration/acc_integration_stm32.c:602:6:acc_integration_mem_free	1
