@@ -1,3 +1,4 @@
-../Src/examples/getting_started/example_detector_presence.c:269:13:do_sensor_calibration	6
-../Src/examples/getting_started/example_detector_presence.c:240:13:cleanup	5
-../Src/examples/getting_started/example_detector_presence.c:80:5:acconeer_main	23
+../Src/examples/getting_started/example_detector_presence.c:51:13:uart_print	1
+../Src/examples/getting_started/example_detector_presence.c:342:13:do_sensor_calibration	6
+../Src/examples/getting_started/example_detector_presence.c:313:13:cleanup	5
+../Src/examples/getting_started/example_detector_presence.c:116:5:acconeer_main	42

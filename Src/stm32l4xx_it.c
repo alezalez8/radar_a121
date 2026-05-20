@@ -345,5 +345,9 @@ void RTC_Alarm_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+//=================================================================
+extern void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+//=================================================================
+
 
 /* USER CODE END 1 */
