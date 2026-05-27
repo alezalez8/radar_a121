@@ -94,8 +94,8 @@ typedef enum
 #define SENSOR_ID         (1U)
 #define SENSOR_TIMEOUT_MS (2000U)
 
-//#define DEFAULT_PRESET_CONFIG PRESENCE_PRESET_CONFIG_MEDIUM_RANGE
-#define DEFAULT_PRESET_CONFIG PRESENCE_PRESET_CONFIG_LONG_RANGE
+#define DEFAULT_PRESET_CONFIG PRESENCE_PRESET_CONFIG_MEDIUM_RANGE
+//#define DEFAULT_PRESET_CONFIG PRESENCE_PRESET_CONFIG_LONG_RANGE
 
 static bool do_sensor_calibration(acc_sensor_t *sensor, acc_cal_result_t *cal_result, void *buffer, uint32_t buffer_size);
 
@@ -581,8 +581,8 @@ static void set_config(acc_detector_presence_config_t *presence_config, presence
 			acc_detector_presence_config_end_set(presence_config, 2.5f);
 			acc_detector_presence_config_automatic_subsweeps_set(presence_config, true);
 			acc_detector_presence_config_signal_quality_set(presence_config, 20.0f);
-			acc_detector_presence_config_inter_frame_idle_state_set(presence_config, ACC_CONFIG_IDLE_STATE_DEEP_SLEEP);
-			acc_detector_presence_config_sweeps_per_frame_set(presence_config, 16);  // was 16
+			acc_detector_presence_config_inter_frame_idle_state_set(presence_config, ACC_CONFIG_IDLE_STATE_READY); //=== WAS ACC_CONFIG_IDLE_STATE_DEEP_SLEEP
+			acc_detector_presence_config_sweeps_per_frame_set(presence_config, 12);  // was 16
 			acc_detector_presence_config_frame_rate_set(presence_config, 20.0f); // was 20  =========================================
 			acc_detector_presence_config_frame_rate_app_driven_set(presence_config, true);  // was false
 			acc_detector_presence_config_reset_filters_on_prepare_set(presence_config, true);
