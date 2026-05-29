@@ -1,4 +1,4 @@
-../Src/examples/getting_started/example_detector_presence.c:51:13:uart_print	8	static
-../Src/examples/getting_started/example_detector_presence.c:342:13:do_sensor_calibration	48	static
-../Src/examples/getting_started/example_detector_presence.c:313:13:cleanup	24	static
-../Src/examples/getting_started/example_detector_presence.c:116:5:acconeer_main	520	static
+../Src/examples/getting_started/example_detector_presence.c:52:13:uart_print	8	static
+../Src/examples/getting_started/example_detector_presence.c:362:13:do_sensor_calibration	48	static
+../Src/examples/getting_started/example_detector_presence.c:333:13:cleanup	24	static
+../Src/examples/getting_started/example_detector_presence.c:117:5:acconeer_main	520	static

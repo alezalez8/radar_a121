@@ -36,7 +36,8 @@
 extern UART_HandleTypeDef huart2;
 
 static volatile int   g_intra_threshold = 1200;
-static volatile float g_frame_rate      = 30.0f;
+//static volatile float g_frame_rate      = 30.0f;
+static volatile float g_end_m       = 5.0f;
 static volatile bool  g_reconfigure     = false;
 static uint32_t       led_on_tick       = 0;
 static bool           led_active        = false;
@@ -205,6 +206,24 @@ int acconeer_main(int argc, char *argv[])
 	while (true)
 	{
 		acc_detector_presence_result_t result;
+		//=================================================
+		if (g_reconfigure)
+		{
+		    g_reconfigure = false;
+		    acc_detector_presence_config_end_set(presence_config, g_end_m);
+		    acc_detector_presence_config_intra_detection_threshold_set(
+		        presence_config, (float)g_intra_threshold / 1000.0f);
+		    if (!acc_detector_presence_prepare(presence_handle, presence_config,
+		                                        sensor, &cal_result, buffer, buffer_size))
+		    {
+		        uart_print("[ERROR] reconfigure failed\r\n");
+		    }
+		    else
+		    {
+		        uart_print("[OK] Reconfigured\r\n");
+		    }
+		}
+		//==================================================
 
 		if (!acc_sensor_measure(sensor))
 		{
@@ -277,6 +296,7 @@ int acconeer_main(int argc, char *argv[])
 		{
 			printf("Frame delayed. Could not read data fast enough.\n");
 			printf("Try lowering the frame rate or call 'acc_sensor_read' more frequently.\n");
+			uart_print("[WARN] Frame delayed!\r\n");
 		}
 
 		/* If "calibration_needed" is indicated, the sensor needs to be recalibrated. */
@@ -410,7 +430,8 @@ static void uart_cmd_process(const char *line)
     {
         uart_print("Commands:\r\n");
         uart_print("  SET INTRA <val>  threshold (100-10000)\r\n");
-        uart_print("  SET RATE <val>   frame rate Hz (5-30)\r\n");
+        //uart_print("  SET RATE <val>   frame rate Hz (5-30)\r\n");
+        uart_print("  SET END <val>    detection range meters (1.0-7.0)\r\n");
         uart_print("  GET              show parameters\r\n");
         uart_print("  STOP             pause monitoring\r\n");
         uart_print("  START            resume monitoring\r\n");
@@ -418,8 +439,12 @@ static void uart_cmd_process(const char *line)
     else if (strncmp(upper, "GET", 3) == 0)
     {
         char buf[80];
-        snprintf(buf, sizeof(buf), "INTRA=%d RATE=%d Hz\r\n",
-            g_intra_threshold, (int)g_frame_rate);
+//        snprintf(buf, sizeof(buf), "INTRA=%d RATE=%d Hz\r\n",
+//            g_intra_threshold, (int)g_frame_rate);
+        snprintf(buf, sizeof(buf), "INTRA=%d END=%d.%01d m\r\n",
+            g_intra_threshold,
+            (int)g_end_m, (int)((g_end_m-(int)g_end_m)*10));
+
         uart_print(buf);
     }
     else if (strncmp(upper, "SET INTRA ", 10) == 0)
@@ -434,19 +459,36 @@ static void uart_cmd_process(const char *line)
         }
         else uart_print("[ERR] Range: 100-10000\r\n");
     }
-    else if (strncmp(upper, "SET RATE ", 9) == 0)
+    //==================================================================
+//    else if (strncmp(upper, "SET RATE ", 9) == 0)
+//    {
+//        int val = atoi(line + 9);
+//        if (val >= 5 && val <= 30)
+//        {
+//            g_frame_rate  = (float)val;
+//            g_reconfigure = true;
+//            char buf[48];
+//            snprintf(buf, sizeof(buf), "[OK] RATE = %d Hz\r\n", val);
+//            uart_print(buf);
+//        }
+//        else uart_print("[ERR] Range: 5-30\r\n");
+//    }
+    else if (strncmp(upper, "SET END ", 8) == 0)
     {
-        int val = atoi(line + 9);
-        if (val >= 5 && val <= 30)
+        float val = strtof(line + 8, NULL);
+        if (val >= 1.0f && val <= 7.0f)
         {
-            g_frame_rate  = (float)val;
+            g_end_m       = val;
             g_reconfigure = true;
             char buf[48];
-            snprintf(buf, sizeof(buf), "[OK] RATE = %d Hz\r\n", val);
+            snprintf(buf, sizeof(buf), "[OK] END = %d.%01d m\r\n",
+                (int)val, (int)((val-(int)val)*10));
             uart_print(buf);
         }
-        else uart_print("[ERR] Range: 5-30\r\n");
+        else uart_print("[ERR] Range: 1.0-7.0\r\n");
     }
+
+    //=========================================================
     else if (strncmp(upper, "STOP", 4) == 0)
     {
         g_monitoring = false;
@@ -577,23 +619,27 @@ static void set_config(acc_detector_presence_config_t *presence_config, presence
 			break;
 
 		case PRESENCE_PRESET_CONFIG_MEDIUM_RANGE:
-			acc_detector_presence_config_start_set(presence_config, 0.3f);
-			acc_detector_presence_config_end_set(presence_config, 2.5f);
+			acc_detector_presence_config_start_set(presence_config, 1.0f);  // was 0.3
+			acc_detector_presence_config_end_set(presence_config, g_end_m); // was 2.5
 			acc_detector_presence_config_automatic_subsweeps_set(presence_config, true);
-			acc_detector_presence_config_signal_quality_set(presence_config, 20.0f);
+			acc_detector_presence_config_signal_quality_set(presence_config, 11.0f); // was 20
 			acc_detector_presence_config_inter_frame_idle_state_set(presence_config, ACC_CONFIG_IDLE_STATE_READY); //=== WAS ACC_CONFIG_IDLE_STATE_DEEP_SLEEP
-			acc_detector_presence_config_sweeps_per_frame_set(presence_config, 12);  // was 16
-			acc_detector_presence_config_frame_rate_set(presence_config, 20.0f); // was 20  =========================================
-			acc_detector_presence_config_frame_rate_app_driven_set(presence_config, true);  // was false
+			acc_detector_presence_config_sweeps_per_frame_set(presence_config, 10);  // was 16
+			acc_detector_presence_config_frame_rate_set(presence_config, 85.0f); // was 20  =========================================
+			acc_detector_presence_config_frame_rate_app_driven_set(presence_config, false);  // was false
 			acc_detector_presence_config_reset_filters_on_prepare_set(presence_config, true);
 			acc_detector_presence_config_intra_detection_set(presence_config, true);
-			acc_detector_presence_config_intra_detection_threshold_set(presence_config, 1.3f);
-			acc_detector_presence_config_intra_frame_time_const_set(presence_config, 0.15f);
-			acc_detector_presence_config_intra_output_time_const_set(presence_config, 0.3f);
+			acc_detector_presence_config_intra_detection_threshold_set(presence_config, 1.3f); // g_intra_threshold / 1000.0f instead 1.3f for synhro
+			acc_detector_presence_config_intra_frame_time_const_set(presence_config, 0.1f); // was 0.15 Постоянная времени фильтра intra. Меньше значение = быстрее
+																							//реакция но больше шум
+			acc_detector_presence_config_intra_output_time_const_set(presence_config, 0.3f);// Постоянная времени выходного фильтра. Определяет как долго
+																							//intra_score остаётся высоким после исчезновения цели
 			acc_detector_presence_config_inter_detection_set(presence_config, true);
 			acc_detector_presence_config_inter_detection_threshold_set(presence_config, 1.0f);
-			acc_detector_presence_config_inter_frame_deviation_time_const_set(presence_config, 0.5f);
-			acc_detector_presence_config_inter_frame_fast_cutoff_set(presence_config, 6.0f);
+			acc_detector_presence_config_inter_frame_deviation_time_const_set(presence_config, 0.5f);//Постоянная времени фильтра отклонения между быстрым и медленным сигналом.
+																										//Определяет насколько быстро алгоритм замечает разницу между "было тихо" и "что-то появилось".
+			acc_detector_presence_config_inter_frame_fast_cutoff_set(presence_config, 6.0f);// Частота среза быстрого фильтра низких частот для межкадрового сигнала. Этот фильтр следит за быстрыми
+															//изменениями фона (порывы ветра, вибрация). Значение 6.0 Гц означает что изменения медленнее 6 Гц попадают в "быстрый фон".
 			acc_detector_presence_config_inter_frame_slow_cutoff_set(presence_config, 0.20f);
 			acc_detector_presence_config_inter_output_time_const_set(presence_config, 2.0f);
 			acc_detector_presence_config_inter_frame_presence_timeout_set(presence_config, 3);
